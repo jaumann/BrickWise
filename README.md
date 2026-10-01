@@ -13,7 +13,26 @@ PDFs you import yourself.
 
 ## Status
 
-Planning. Code is coming in pull requests.
+Early development. The parsing engine (`engine/`) works as a command-line tool.
+The desktop app (Electron) comes next.
+
+## Repository layout
+
+| Path | What it is |
+| --- | --- |
+| `engine/` | Python package that parses instruction PDFs |
+| `samples/` | Your own instruction PDFs for testing. Git-ignored; never commit PDFs. |
+
+## Trying the parser
+
+```sh
+cd engine
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+brickwise parse ../samples/6674440.pdf
+```
+
+See [engine/README.md](engine/README.md) for details.
 
 ## License
 

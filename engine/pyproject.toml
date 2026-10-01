@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brickwise"
+version = "0.1.0"
+description = "Parse LEGO building instruction PDFs into searchable steps, parts and bags"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "pypdfium2>=4.30",
+    "numpy>=1.24",
+    "opencv-python-headless>=4.8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.16,<0.17", "reportlab>=4", "pillow>=10"]
+
+[project.scripts]
+brickwise = "brickwise.cli:main"
+
+[tool.setuptools]
+packages = ["brickwise"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
