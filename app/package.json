@@ -1,0 +1,37 @@
+{
+  "name": "brickwise",
+  "productName": "BrickWise",
+  "version": "0.1.0",
+  "description": "Find the parts each step and bag of a LEGO building instruction book uses.",
+  "license": "MIT",
+  "author": "Jon Aumann and BrickWise contributors",
+  "homepage": "https://github.com/jaumann/BrickWise",
+  "repository": "github:jaumann/BrickWise",
+  "private": true,
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "playwright test",
+    "engine": "python3 ../engine/packaging/build.py",
+    "package": "npm run build && electron-builder --publish never",
+    "format": "prettier --write .",
+    "lint": "prettier --check ."
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.20.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "prettier": "^3.9.9",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.6"
+  }
+}
