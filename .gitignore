@@ -1,0 +1,24 @@
+# Instruction PDFs are copyrighted by the LEGO Group. Never commit them,
+# or anything extracted from them.
+samples/
+*.pdf
+brickwise-out/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+build/
+dist/
+
+# Node / Electron
+node_modules/
+out/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
