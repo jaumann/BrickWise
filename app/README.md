@@ -7,8 +7,9 @@ the library: a SQLite database plus pictures cut from the PDFs you import.
 
 ## Installing a Mac build
 
-Each run of the `app` workflow in GitHub Actions builds a `.dmg` for Apple
-silicon Macs, in the run's `BrickWise-mac` artifact.
+Each run of the `app` workflow in GitHub Actions builds two `.dmg` files:
+`BrickWise-mac-apple-silicon` for M-series Macs and `BrickWise-mac-intel` for
+Intel Macs. Both need macOS 13 Ventura or later (Electron 44's minimum).
 
 The app is not yet signed with an Apple Developer ID, so macOS blocks it the
 first time. Either:
@@ -54,8 +55,15 @@ under `xvfb-run`.
 ```sh
 pip install -e "../engine[package]"
 npm run engine               # PyInstaller: engine/dist/brickwise-engine
-npm run package -- --mac     # electron-builder: dist/BrickWise-<version>-arm64.dmg
+npm run package -- --mac --arm64   # electron-builder: dist/BrickWise-<version>-arm64.dmg
+npm run package -- --mac --x64     # an Intel build, on an Intel Mac
 ```
+
+Build each architecture on a Mac of that kind, because the engine is built
+with the Python that runs it. pip also picks wheels made for the Mac it runs
+on, which can need a newer macOS than the app does; CI downloads wheels for
+macOS 13 first and then checks every binary in the app with
+`engine/packaging/check_macos.py`.
 
 `npm run package` bundles the PyInstaller output inside the app, so the
 packaged app needs no Python. To test a packaged build, point the end-to-end

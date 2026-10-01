@@ -68,7 +68,9 @@ those records each time, using the same reconciliation code as the parser.
 `server.py` is how the desktop app reaches the library: one JSON request per
 line on stdin, one reply per line on stdout. Imports run one at a time in a
 child process, so a crash or a cancel never takes the server down.
-`packaging/build.py` freezes the engine with PyInstaller for the app.
+`packaging/build.py` freezes the engine with PyInstaller for the app, and
+`packaging/check_macos.py` checks that a Mac build runs on the oldest macOS
+it should.
 
 ## Tests
 

@@ -38,17 +38,39 @@ jobs:
           name: test-results-linux
           path: app/test-results/
 
-  # Build the Mac app with the engine bundled, test that build, and keep the .dmg.
+  # Build the Mac app for each architecture with the engine bundled, test it, and keep the .dmg.
   mac:
-    runs-on: macos-latest
+    name: mac (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: apple-silicon
+            runner: macos-latest
+            arch: arm64
+            cpu: arm64
+            out: mac-arm64
+          - name: intel
+            runner: macos-15-intel
+            arch: x64
+            cpu: x86_64
+            out: mac
+    runs-on: ${{ matrix.runner }}
     env:
       # Ad hoc signing uses no secrets, so it is safe on pull requests too.
       CSC_FOR_PULL_REQUEST: "true"
+      # Electron 44 needs macOS 13, so the engine shouldn't need anything newer.
+      MIN_MACOS: "13.0"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # pip would pick wheels built for the runner's macOS, which can refuse to load on older Macs.
+      - run: >
+          pip download --dest wheels --only-binary=:all: --platform macosx_${MIN_MACOS/./_}_${{ matrix.cpu }}
+          --python-version 3.12 --implementation cp --abi cp312 numpy opencv-python-headless pypdfium2
+      - run: pip install --no-index --find-links wheels numpy opencv-python-headless pypdfium2
       - run: pip install -e "engine[dev,package]"
       - run: python engine/packaging/build.py
       - run: engine/dist/brickwise-engine/brickwise-engine --version
@@ -59,20 +81,21 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - run: npm ci
         working-directory: app
-      - run: npm run package -- --mac
+      - run: npm run package -- --mac --${{ matrix.arch }}
         working-directory: app
+      - run: python engine/packaging/check_macos.py app/dist/${{ matrix.out }}/BrickWise.app --arch ${{ matrix.cpu }} --max $MIN_MACOS
       - run: npm test
         working-directory: app
         env:
-          BRICKWISE_APP: ${{ github.workspace }}/app/dist/mac-arm64/BrickWise.app/Contents/MacOS/BrickWise
+          BRICKWISE_APP: ${{ github.workspace }}/app/dist/${{ matrix.out }}/BrickWise.app/Contents/MacOS/BrickWise
           BRICKWISE_PYTHON: python
       - uses: actions/upload-artifact@v4
         with:
-          name: BrickWise-mac
+          name: BrickWise-mac-${{ matrix.name }}
           path: app/dist/*.dmg
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: test-results-mac
+          name: test-results-mac-${{ matrix.name }}
           path: app/test-results/

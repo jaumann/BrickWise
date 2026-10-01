@@ -15,9 +15,9 @@ extraResources:
 npmRebuild: false
 mac:
   category: public.app-category.productivity
-  target:
-    - target: dmg
-      arch: [arm64]
+  # Pass --arm64 or --x64 to choose the architecture.
+  target: dmg
+  artifactName: ${productName}-${version}-${arch}.${ext}
   # Not signed with a Developer ID yet, so macOS asks before the first launch.
   # "-" signs ad hoc, which Apple silicon needs to run the app at all.
   identity: '-'

@@ -28,7 +28,7 @@ parts by bag. Part lookup, printable bag lists and build tracking come next.
 ## Trying the app
 
 Mac builds come from the `app` workflow in GitHub Actions: open a run and
-download the `BrickWise-mac` artifact. See [app/README.md](app/README.md) for
+download `BrickWise-mac-apple-silicon` or `BrickWise-mac-intel`. See [app/README.md](app/README.md) for
 installing it, and for running the app from source.
 
 ## Trying the parser
