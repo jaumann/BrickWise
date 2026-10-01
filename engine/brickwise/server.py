@@ -118,7 +118,7 @@ class Server:
             result = getattr(self, method)(**(req.get("params") or {}))
         except LibraryError as e:
             self.send({"id": rid, "error": {"message": str(e)}})
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - any failure goes back to the app as a message
             traceback.print_exc(file=sys.stderr)
             self.send({"id": rid, "error": {"message": f"{type(e).__name__}: {e}"}})
         else:
@@ -280,6 +280,6 @@ def serve(root: str) -> int:
     proto = os.fdopen(os.dup(sys.stdout.fileno()), "w", encoding="utf-8", newline="\n")
     os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
     sys.stdout = sys.stderr
-    inp = open(sys.stdin.fileno(), encoding="utf-8", closefd=False)
-    Server(root, proto).run(inp)
+    with open(sys.stdin.fileno(), encoding="utf-8", closefd=False) as inp:
+        Server(root, proto).run(inp)
     return 0
