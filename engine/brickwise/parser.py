@@ -70,11 +70,23 @@ def parse(
 ) -> ParsedSet:
     """Parse one instruction PDF. Pass a dict as `debug` to get intermediate data back."""
     doc = Document(path)
+    try:
+        return _parse(doc, path, progress, debug, pictures)
+    finally:
+        # Close the PDF so it isn't held open (on Windows, locked) after parsing.
+        # With `debug`, the caller may still read pages through the returned layout.
+        if debug is None:
+            doc.close()
+
+
+def _parse(
+    doc: Document, path: str, progress: Progress, debug: dict | None, pictures: PictureSink | None
+) -> ParsedSet:
     # Fractions roughly follow where the time goes on a large book.
     progress("reading text", 0.0)
     layout = Layout(doc)
     if not layout.inventory_pages:
-        raise ValueError("no parts inventory found; is this a LEGO building instruction PDF?")
+        raise ValueError("No parts inventory found. Is this a LEGO building instruction PDF?")
 
     progress("reading inventory", 0.09)
     inventory = layout.inventory()

@@ -85,6 +85,8 @@ def _stages() -> Progress:
 
 
 def _import(library: str, paths: list[str], jsonl: bool) -> int:
+    from pypdfium2 import PdfiumError
+
     from .library import Library, LibraryError
 
     def emit(msg: dict) -> None:
@@ -101,12 +103,18 @@ def _import(library: str, paths: list[str], jsonl: bool) -> int:
                 print(path)
                 set_id, new = lib.import_pdf(path, _stages())
                 print(f"  {'added as' if new else 'already in the library as'} set {set_id}")
-        except (LibraryError, ValueError, OSError) as e:
+        except Exception as e:  # noqa: BLE001 - reported to the user, who can do nothing else with it
             status = 1
-            if jsonl:
-                emit({"error": str(e)})
+            if isinstance(e, PdfiumError):
+                msg = f"This file can't be read as a PDF ({e})."
+            elif isinstance(e, (LibraryError, ValueError, OSError)):
+                msg = str(e)
             else:
-                print(f"  {e}", file=sys.stderr)
+                msg = f"{type(e).__name__}: {e}"
+            if jsonl:
+                emit({"error": msg})
+            else:
+                print(f"  {msg}", file=sys.stderr)
     lib.close()
     return status
 

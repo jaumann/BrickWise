@@ -86,7 +86,7 @@ def test_failed_import_is_reported(server, tmp_path):
     assert server.wait_idle()
     [job] = call(server, "jobs")["result"]
     assert job["state"] == "failed"
-    assert job["error"]
+    assert "can't be read as a PDF" in job["error"]
 
 
 def test_queued_import_can_be_cancelled(server, book_pdf):

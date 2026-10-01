@@ -91,7 +91,7 @@ def test_rejects_pdf_without_inventory(tmp_path):
     book = Book(pages=[[Step(1, [("302301", 1)])]], inventory={})
     path = tmp_path / "noinv.pdf"
     write_book(str(path), book)
-    with pytest.raises(ValueError, match="no parts inventory"):
+    with pytest.raises(ValueError, match="No parts inventory"):
         parse(str(path))
 
 
