@@ -13,10 +13,13 @@ from .model import ParsedSet
 from .pdfdoc import Box, Document, Image
 from .reconcile import Reconciler
 
-Progress = Callable[[str], None]
+# Called with the current stage and the overall fraction done (0..1).
+Progress = Callable[[str, float], None]
+# Called once per part picture with its key and RGB pixels, for callers that keep them.
+PictureSink = Callable[[str, np.ndarray], None]
 
 
-def _quiet(_: str) -> None:
+def _quiet(_stage: str, _done: float) -> None:
     pass
 
 
@@ -59,36 +62,46 @@ def compose(images: list[Image], tiles: list[tuple[str, Box]]) -> tuple[Box, np.
     return union, canvas
 
 
-def parse(path: str, progress: Progress = _quiet, debug: dict | None = None) -> ParsedSet:
+def parse(
+    path: str,
+    progress: Progress = _quiet,
+    debug: dict | None = None,
+    pictures: PictureSink | None = None,
+) -> ParsedSet:
     """Parse one instruction PDF. Pass a dict as `debug` to get intermediate data back."""
     doc = Document(path)
-    progress("reading text")
+    # Fractions roughly follow where the time goes on a large book.
+    progress("reading text", 0.0)
     layout = Layout(doc)
     if not layout.inventory_pages:
         raise ValueError("no parts inventory found; is this a LEGO building instruction PDF?")
 
-    progress("reading inventory")
+    progress("reading inventory", 0.09)
     inventory = layout.inventory()
     steps = layout.step_marks()
-    progress("finding steps")
+    progress("finding steps", 0.2)
     callouts = layout.callouts(steps)
     bags = layout.bag_marks()
     multipliers = layout.multipliers(steps, callouts)
     branches = layout.branches()
 
-    progress("matching part pictures")
+    progress("matching part pictures", 0.26)
     needed = {i.image_key for i in inventory if i.image_key} | {c.image_key for c in callouts}
     needed_steps = {c.image_key for c in callouts}
     by_page: dict[int, list[str]] = {}
     for key in needed:
         by_page.setdefault(layout.pictures[key][0], []).append(key)
     feats: dict[str, Feature | None] = {}
-    for p in sorted(by_page):
+    pages = sorted(by_page)
+    for n, p in enumerate(pages, 1):
         images = layout.page(p).images
         for key in by_page[p]:
             box, rgb = compose(images, layout.pictures[key][1])
             feats[key] = feature(rgb, box.w, box.h) if rgb is not None else None
+            if pictures is not None and rgb is not None:
+                pictures(key, rgb)
         doc.release(p - 1)
+        progress("matching part pictures", 0.26 + 0.72 * n / len(pages))
 
     inv_feats: dict[str, Feature] = {}
     for item in inventory:
@@ -115,7 +128,7 @@ def parse(path: str, progress: Progress = _quiet, debug: dict | None = None) -> 
                 candidates[key] = rank(f, inv_feats, scale)
     callouts = [c for c in callouts if candidates.get(c.image_key)]
 
-    progress("checking totals against the inventory")
+    progress("checking totals against the inventory", 0.98)
     totals: dict[str, int] = {}
     for item in inventory:
         totals[item.element_id] = totals.get(item.element_id, 0) + item.count
@@ -135,4 +148,5 @@ def parse(path: str, progress: Progress = _quiet, debug: dict | None = None) -> 
         multipliers=multipliers,
         branches=branches,
         mismatches=mismatches,
+        candidates={c.image_key: candidates[c.image_key] for c in callouts},
     )

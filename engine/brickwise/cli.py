@@ -9,8 +9,9 @@ import time
 from collections import defaultdict
 from dataclasses import asdict
 
+from . import __version__
 from .model import ParsedSet
-from .parser import parse
+from .parser import Progress, parse
 
 
 def summary(ps: ParsedSet, seconds: float | None = None) -> str:
@@ -71,8 +72,48 @@ def where_used(ps: ParsedSet, element_id: str) -> list[tuple[int, int, int]]:
     return sorted((s, p, n) for (s, p), n in agg.items())
 
 
+def _stages() -> Progress:
+    """Print each parsing stage once, on stderr."""
+    last = [""]
+
+    def show(stage: str, _done: float) -> None:
+        if stage != last[0]:
+            last[0] = stage
+            print(f"  {stage}...", file=sys.stderr)
+
+    return show
+
+
+def _import(library: str, paths: list[str], jsonl: bool) -> int:
+    from .library import Library, LibraryError
+
+    def emit(msg: dict) -> None:
+        print(json.dumps(msg), flush=True)
+
+    lib = Library(library)
+    status = 0
+    for path in paths:
+        try:
+            if jsonl:
+                set_id, new = lib.import_pdf(path, lambda s, f: emit({"stage": s, "fraction": round(f, 4)}))
+                emit({"set_id": set_id, "new": new})
+            else:
+                print(path)
+                set_id, new = lib.import_pdf(path, _stages())
+                print(f"  {'added as' if new else 'already in the library as'} set {set_id}")
+        except (LibraryError, ValueError, OSError) as e:
+            status = 1
+            if jsonl:
+                emit({"error": str(e)})
+            else:
+                print(f"  {e}", file=sys.stderr)
+    lib.close()
+    return status
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="brickwise", description="Parse LEGO building instruction PDFs.")
+    ap.add_argument("--version", action="version", version=f"brickwise {__version__}")
     sub = ap.add_subparsers(dest="cmd", required=True)
     p_parse = sub.add_parser("parse", help="parse PDFs and report how well step totals match the inventory")
     p_parse.add_argument("pdf", nargs="+")
@@ -82,14 +123,28 @@ def main(argv: list[str] | None = None) -> int:
     p_part = sub.add_parser("part", help="list the steps that use a part")
     p_part.add_argument("pdf")
     p_part.add_argument("element_id")
+    p_import = sub.add_parser("import", help="add PDFs to a library folder")
+    p_import.add_argument("--library", required=True, metavar="DIR")
+    p_import.add_argument("--jsonl", action="store_true", help="report progress as JSON lines (for the app)")
+    p_import.add_argument("pdf", nargs="+")
+    p_serve = sub.add_parser("serve", help="answer the desktop app's requests over stdin/stdout")
+    p_serve.add_argument("--library", required=True, metavar="DIR")
     args = ap.parse_args(argv)
+
+    if args.cmd == "import":
+        return _import(args.library, args.pdf, args.jsonl)
+
+    if args.cmd == "serve":
+        from .server import serve
+
+        return serve(args.library)
 
     if args.cmd == "parse":
         if args.json and len(args.pdf) > 1:
             ap.error("--json takes a single PDF")
         for path in args.pdf:
             t = time.time()
-            ps = parse(path, progress=lambda s: print(f"  {s}...", file=sys.stderr))
+            ps = parse(path, progress=_stages())
             print(summary(ps, time.time() - t))
             if args.json:
                 with open(args.json, "w") as fh:
