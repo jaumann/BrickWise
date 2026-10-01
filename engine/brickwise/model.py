@@ -93,6 +93,8 @@ class ParsedSet:
     multipliers: list[Multiplier]
     branches: list[Branch]
     mismatches: list[Mismatch] = field(default_factory=list)
+    # Picture key -> closest inventory parts as (distance, element_id), best first.
+    candidates: dict[str, list[tuple[float, str]]] = field(default_factory=dict)
 
     @property
     def inventory_totals(self) -> dict[str, int]:

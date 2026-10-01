@@ -1,0 +1,30 @@
+# Packages the app with the engine that engine/packaging/build.py builds.
+# Build the engine first: `npm run engine`, then `npm run package`.
+appId: io.github.jaumann.brickwise
+productName: BrickWise
+copyright: Copyright © 2026 Jon Aumann and BrickWise contributors
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - out/**/*
+  - package.json
+extraResources:
+  - from: ../engine/dist/brickwise-engine
+    to: engine
+npmRebuild: false
+mac:
+  category: public.app-category.productivity
+  # Pass --arm64 or --x64 to choose the architecture.
+  target: dmg
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  # Not signed with a Developer ID yet, so macOS asks before the first launch.
+  # "-" signs ad hoc, which Apple silicon needs to run the app at all.
+  identity: '-'
+  hardenedRuntime: false
+dmg:
+  title: BrickWise ${version}
+linux:
+  target: dir
+win:
+  target: dir

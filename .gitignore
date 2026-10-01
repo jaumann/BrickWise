@@ -17,6 +17,9 @@ dist/
 # Node / Electron
 node_modules/
 out/
+*.tsbuildinfo
+test-results/
+playwright-report/
 
 # OS / editors
 .DS_Store

@@ -18,6 +18,8 @@ brickwise parse book.pdf [more.pdf ...]   # summary and how well step totals mat
 brickwise parse book.pdf --json out.json  # full result as JSON
 brickwise part book.pdf 6439046           # steps that use a part
 brickwise bags book.pdf                   # parts that go in each bag
+brickwise import --library DIR book.pdf   # add a PDF to a library folder
+brickwise serve --library DIR             # answer the desktop app over stdin/stdout
 ```
 
 Example output:
@@ -52,6 +54,23 @@ Example output:
    branch for alternative builds, and moves a picture to its runner-up match
    when that makes the totals agree and the runner-up is nearly as close.
    Whatever still disagrees is reported as a mismatch for the user to settle.
+
+## Library
+
+`library.py` keeps the user's imported sets in one folder: a SQLite database
+(inventory, steps, bags and every part picture's step and count) and PNGs of
+the part pictures, cut from the PDF with their background made transparent.
+It also records what the user changes while checking parts: a step picture
+matched to a different part, a piece placed in a bag or step by hand (1x
+each), or a count left as it is. Totals and per-bag lists are worked out from
+those records each time, using the same reconciliation code as the parser.
+
+`server.py` is how the desktop app reaches the library: one JSON request per
+line on stdin, one reply per line on stdout. Imports run one at a time in a
+child process, so a crash or a cancel never takes the server down.
+`packaging/build.py` freezes the engine with PyInstaller for the app, and
+`packaging/check_macos.py` checks that a Mac build runs on the oldest macOS
+it should.
 
 ## Tests
 

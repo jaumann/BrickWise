@@ -159,3 +159,7 @@ class Document:
     def release(self, index: int) -> None:
         """Drop a cached page to keep memory flat on very large books."""
         self._pages.pop(index, None)
+
+    def close(self) -> None:
+        self._pages.clear()
+        self._pdf.close()
