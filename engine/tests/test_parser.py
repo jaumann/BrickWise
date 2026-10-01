@@ -1,7 +1,7 @@
 import pytest
 from synthetic import Book, Step, default_book, write_book
 
-from brickwise.cli import main, where_used
+from brickwise.cli import main, summary, where_used
 from brickwise.parser import parse
 
 
@@ -58,6 +58,21 @@ def test_reports_a_mismatch(tmp_path):
     write_book(str(path), book)
     ps = parse(str(path))
     assert [(m.element_id, m.inventory, m.steps) for m in ps.mismatches] == [("302301", 7, 6)]
+
+
+def test_part_in_no_counted_step_is_reported_as_unplaced(tmp_path):
+    # A part drawn only in an unlabelled panel never shows up in a parts box.
+    book = default_book()
+    book.pages[1] = [Step(1, [("3001021", 2), ("302301", 1)])]
+    book.pages[3] = [("mult-start", 2), Step(4, [("4211388", 1)])]
+    book.inventory["4211415"] = 1
+    path = tmp_path / "unplaced.pdf"
+    write_book(str(path), book)
+    ps = parse(str(path))
+    assert [(m.element_id, m.inventory, m.steps, m.unplaced) for m in ps.mismatches] == [
+        ("4211415", 1, 0, True)
+    ]
+    assert "not in any counted step" in summary(ps)
 
 
 def test_sub_build_already_totalled_is_not_multiplied(tmp_path):

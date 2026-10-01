@@ -72,6 +72,13 @@ class Mismatch:
     inventory: int
     steps: int
 
+    @property
+    def unplaced(self) -> bool:
+        """In the inventory but in no counted step: usually minifigure parts, which
+        some books draw in assembly panels without "Nx" labels. Each such piece
+        counts as 1x once the user places it."""
+        return self.steps == 0
+
 
 @dataclass
 class ParsedSet:

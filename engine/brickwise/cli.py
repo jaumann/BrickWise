@@ -37,10 +37,22 @@ def summary(ps: ParsedSet, seconds: float | None = None) -> str:
         segs = ", ".join(f"pages {a}-{z}" for a, z in b.segments)
         out.append(f"  alternative builds at page {b.page}: {segs}; rejoin at page {b.rejoin}")
     out.append(f"  reconciled: {ok}/{lines} parts ({pct:.1f}%)" + (f" in {seconds:.1f}s" if seconds else ""))
-    for m in ps.mismatches[:15]:
-        out.append(f"    {m.element_id}: inventory {m.inventory}, steps {m.steps}")
-    if len(ps.mismatches) > 15:
-        out.append(f"    ... {len(ps.mismatches) - 15} more")
+    counted = [m for m in ps.mismatches if not m.unplaced]
+    unplaced = [m for m in ps.mismatches if m.unplaced]
+    if counted:
+        out.append(f"  counts that disagree: {len(counted)}")
+        for m in counted[:15]:
+            out.append(f"    {m.element_id}: inventory {m.inventory}, steps {m.steps}")
+        if len(counted) > 15:
+            out.append(f"    ... {len(counted) - 15} more")
+    if unplaced:
+        pieces = sum(m.inventory for m in unplaced)
+        out.append(
+            f"  not in any counted step (often minifigure parts): {len(unplaced)} parts, {pieces} pieces"
+        )
+        out.append(
+            "    " + ", ".join(m.element_id for m in unplaced[:12]) + (" ..." if len(unplaced) > 12 else "")
+        )
     return "\n".join(out)
 
 
