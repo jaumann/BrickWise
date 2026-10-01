@@ -13,15 +13,23 @@ PDFs you import yourself.
 
 ## Status
 
-Early development. The parsing engine (`engine/`) works as a command-line tool.
-The desktop app (Electron) comes next.
+Early development. The desktop app (`app/`) imports PDFs into a library,
+lets you check the parts whose counts don't add up, and shows each set's
+parts by bag. Part lookup, printable bag lists and build tracking come next.
 
 ## Repository layout
 
 | Path | What it is |
 | --- | --- |
-| `engine/` | Python package that parses instruction PDFs |
+| `app/` | The desktop app: Electron, React and TypeScript |
+| `engine/` | Python package that parses instruction PDFs and keeps the library |
 | `samples/` | Your own instruction PDFs for testing. Git-ignored; never commit PDFs. |
+
+## Trying the app
+
+Mac builds come from the `app` workflow in GitHub Actions: open a run and
+download the `BrickWise-mac` artifact. See [app/README.md](app/README.md) for
+installing it, and for running the app from source.
 
 ## Trying the parser
 
