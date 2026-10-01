@@ -20,11 +20,15 @@ def summary(ps: ParsedSet, seconds: float | None = None) -> str:
     pct = 100 * ok / lines if lines else 0
     out = [
         f"{ps.path}",
-        f"  set {ps.set_number or '?'} · {ps.page_count} pages · inventory on pages "
-        f"{ps.inventory_pages[0]}-{ps.inventory_pages[-1]}",
+        (
+            f"  set {ps.set_number or '?'} · {ps.page_count} pages · inventory on pages "
+            f"{ps.inventory_pages[0]}-{ps.inventory_pages[-1]}"
+        ),
         f"  inventory: {lines} parts, {sum(inv.values())} pieces",
-        f"  steps: {len({(s.page, s.number) for s in ps.steps})} step numbers, "
-        f"{len(ps.callouts)} part pictures, {len(ps.bags)} bags",
+        (
+            f"  steps: {len({(s.page, s.number) for s in ps.steps})} step numbers, "
+            f"{len(ps.callouts)} part pictures, {len(ps.bags)} bags"
+        ),
     ]
     if ps.multipliers:
         applied = sum(1 for m in ps.multipliers if m.applied)

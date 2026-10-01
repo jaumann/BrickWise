@@ -135,7 +135,7 @@ def _draw_step(c: canvas.Canvas, step: Step, x: float, top: float) -> None:
     tallest = max(PARTS[e][3] for e, _ in step.parts) * STEP_SCALE + 8 / 3
     for element, count in step.parts:
         pixels = part_pixels(element, STEP_SCALE)
-        wpt, hpt = _image(c, pixels, px, top + 6 + tallest - pixels.shape[0] / 3)
+        wpt, _hpt = _image(c, pixels, px, top + 6 + tallest - pixels.shape[0] / 3)
         _text(c, f"{count}x", px, top + 8 + tallest, 7)
         px += wpt + 10
     box_h = tallest + 20

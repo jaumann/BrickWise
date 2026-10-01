@@ -76,7 +76,7 @@ class Reconciler:
         self.scopes = [scope_of(c.page, branches) for c in callouts]
         self.regions = [[i for i, m in enumerate(multipliers) if in_region(c, m)] for c in callouts]
         self.assign = {k: v[0][1] for k, v in candidates.items() if v}
-        self.dist = {k: dict((e, d) for d, e in v) for k, v in candidates.items()}
+        self.dist = {k: {e: d for d, e in v} for k, v in candidates.items()}
         self.best = {k: v[0][0] for k, v in candidates.items() if v}
 
     # -- totals ---------------------------------------------------------

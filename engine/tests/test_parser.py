@@ -1,9 +1,8 @@
 import pytest
+from synthetic import Book, Step, default_book, write_book
 
 from brickwise.cli import main, where_used
 from brickwise.parser import parse
-
-from synthetic import Book, Step, default_book, write_book
 
 
 @pytest.fixture(scope="module")

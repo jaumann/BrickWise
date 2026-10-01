@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7", "ruff>=0.5", "reportlab>=4", "pillow>=10"]
+dev = ["pytest>=7", "ruff>=0.16,<0.17", "reportlab>=4", "pillow>=10"]
 
 [project.scripts]
 brickwise = "brickwise.cli:main"

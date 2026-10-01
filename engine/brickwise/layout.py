@@ -290,9 +290,9 @@ class Layout:
         for c in cands:
             chain = [c]
             for prev in best:
-                if prev[-1].number <= c.number and prev[-1].page < c.page and len(prev) + 1 > len(chain):
-                    if c.number - prev[-1].number <= 3:
-                        chain = prev + [c]
+                step_up = c.number - prev[-1].number
+                if 0 <= step_up <= 3 and prev[-1].page < c.page and len(prev) + 1 > len(chain):
+                    chain = prev + [c]
             best.append(chain)
         if not best:
             return []

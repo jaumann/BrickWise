@@ -12,7 +12,7 @@ from functools import cached_property
 
 import numpy as np
 import pypdfium2 as pdfium
-import pypdfium2.raw as raw
+from pypdfium2 import raw
 
 
 @dataclass(frozen=True)
@@ -131,7 +131,7 @@ class Page:
             try:
                 data = obj.get_data(decode_simple=False)
                 key = hashlib.blake2b(bytes(data), digest_size=12).hexdigest()
-            except Exception:  # pragma: no cover - exotic image encodings
+            except pdfium.PdfiumError:  # pragma: no cover - exotic image encodings
                 w, h = obj.get_px_size()
                 key = f"anon-{self.index}-{len(out)}-{w}x{h}"
             out.append(Image(Box(left, self.height - top, right, self.height - bottom), key, obj))
